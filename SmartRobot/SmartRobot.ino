@@ -1,5 +1,5 @@
 #include <IRremote.h>
-
+#include <Servo.h>  
 //------- IR REMOTE CODES ---------//
 #define FORWARD 16736925
 #define BACK    16754775
@@ -17,17 +17,36 @@
 #define ENA 6   // Right wheel speed
 #define carSpeed 200  // initial speed of car >=0 to <=255
 
+
 IRrecv irrecv(RECV_PIN);
 decode_results results;
 unsigned long val;
 unsigned long preMillis;
 
+
+Servo myservo; 
+int Echo = A4; 
+int Trig = A5; 
+int rightDistance = 0, leftDistance = 0, middleDistance = 0;
+
 void setup() {
   // put your setup code here, to run once:
+  servosetup(); 
   Serial.begin(9600);
   enableMotorDriver(); 
   stop();
-  irrecv.enableIRIn();
+  irsetup();
+}
+
+void ultrasonicsetup(){
+  pinMode(Echo, INPUT);
+  pinMode(Trig, OUTPUT);
+}
+
+void servosetup(){
+    myservo.attach(3);  // attach servo on pin 3 to servo object
+    myservo.write(90);  //setservo position according to scaled value
+    
 }
 
 void stop(){
@@ -36,7 +55,9 @@ void stop(){
   Serial.println("STOP!");
 }
 
-
+void irsetup(){
+  irrecv.enableIRIn();  
+}
 void enableMotorDriver(){
   pinMode(IN1, OUTPUT);
   pinMode(IN2, OUTPUT);
@@ -45,6 +66,17 @@ void enableMotorDriver(){
   pinMode(ENA, OUTPUT);
   pinMode(ENB, OUTPUT);
 }
+
+//Ultrasonic distance measurement Sub function
+int getDistance() {
+    digitalWrite(Trig, LOW);
+    delayMicroseconds(2);
+    digitalWrite(Trig, HIGH);
+    delayMicroseconds(10);
+    digitalWrite(Trig, LOW);
+    return (int)pulseIn(Echo, HIGH) / 58;
+}
+
 
 
 void forward() {
@@ -109,6 +141,48 @@ void recvIR(IRrecv *recvd){
       preMillis = millis();
     }
   }
+}
+
+void ultraServoScan(){ //rotate servo and scan for nearby objects
+  delay(500);
+    middleDistance = getDistance();
+
+    if(middleDistance <= 20) {
+      stop();
+      delay(500);
+      myservo.write(10);
+      delay(1000);
+      rightDistance = getDistance();
+
+      delay(500);
+      myservo.write(90);
+      delay(1000);
+      myservo.write(180);
+      delay(1000);
+      leftDistance = getDistance();
+
+      delay(500);
+      myservo.write(90);
+      delay(1000);
+      if(rightDistance > leftDistance) {
+        right();
+        delay(360);
+      }
+      else if(rightDistance < leftDistance) {
+        left();
+        delay(360);
+      }
+      else if((rightDistance <= 20) || (leftDistance <= 20)) {
+        back();
+        delay(180);
+      }
+      else {
+        forward();
+      }
+    }
+    else {
+        forward();
+    }
 }
 
 void loop() {
