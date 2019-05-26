@@ -23,12 +23,17 @@ decode_results results;
 unsigned long val;
 unsigned long preMillis;
 
-
+//servo and ultrasonic components
 Servo myservo; 
 int Echo = A4; 
 int Trig = A5; 
 int rightDistance = 0, leftDistance = 0, middleDistance = 0;
 
+//variables controlling wheel speeds
+int backRightWheel = 0; 
+int backLeftWheel = 0; 
+int frontRightWheel = 0;
+int frontLeftWheel = 0;
 void setup() {
   // put your setup code here, to run once:
   servosetup(); 
@@ -119,6 +124,9 @@ void right(){
   Serial.println("go right!");
 }
 
+void moveCar(){
+  
+}
 
 void recvIR(IRrecv *recvd){
   if (irrecv.decode(&results)){ 
