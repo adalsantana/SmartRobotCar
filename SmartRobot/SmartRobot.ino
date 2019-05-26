@@ -124,11 +124,11 @@ void right(){
   Serial.println("go right!");
 }
 
-void moveCar(){
+//void moveCar(int directionChange){
   
-}
+//}
 
-void recvIR(IRrecv *recvd){
+void recvIR(){
   if (irrecv.decode(&results)){ 
     preMillis = millis();
     val = results.value;
@@ -195,5 +195,6 @@ void ultraServoScan(){ //rotate servo and scan for nearby objects
 
 void loop() {
   // put your main code here, to run repeatedly:
-
+  ultraServoScan();
+  recvIR();
 }
