@@ -18,6 +18,8 @@
 #define carSpeed 200  // initial speed of car >=0 to <=255
 
 
+
+
 IRrecv irrecv(RECV_PIN);
 decode_results results;
 unsigned long val;
@@ -39,7 +41,7 @@ void setup() {
   servosetup(); 
   Serial.begin(9600);
   enableMotorDriver(); 
-  stop();
+  freeze();
   irsetup();
 }
 
@@ -54,10 +56,10 @@ void servosetup(){
     
 }
 
-void stop(){
+void freeze(){
   digitalWrite(ENA, LOW);
   digitalWrite(ENB, LOW);
-  Serial.println("STOP!");
+  //Serial.println("STOP!");
 }
 
 void irsetup(){
@@ -72,7 +74,7 @@ void enableMotorDriver(){
   pinMode(ENB, OUTPUT);
 }
 
-//Ultrasonic distance measurement Sub function
+//Ultrasonic distance measurement helper function
 int getDistance() {
     digitalWrite(Trig, LOW);
     delayMicroseconds(2);
@@ -91,7 +93,7 @@ void forward() {
   digitalWrite(IN2, LOW);
   digitalWrite(IN3, LOW);
   digitalWrite(IN4, HIGH);
-  Serial.println("go forward!");
+  //Serial.println("go forward!");
 }
 
 void back(){
@@ -101,27 +103,27 @@ void back(){
   digitalWrite(IN2, HIGH);
   digitalWrite(IN3, HIGH);
   digitalWrite(IN4, LOW);
-  Serial.println("go back!");
+  //Serial.println("go back!");
 }
 
-void left(){
+void left(){ 
   analogWrite(ENA, carSpeed);
   analogWrite(ENB, carSpeed);
   digitalWrite(IN1, LOW);
-  digitalWrite(IN2, HIGH);
+  digitalWrite(IN2, HIGH); //left wheels backward
   digitalWrite(IN3, LOW);
-  digitalWrite(IN4, HIGH); 
-  Serial.println("go left!");
+  digitalWrite(IN4, HIGH); //right wheels forward
+  //Serial.println("go left!");
 }
 
 void right(){
   analogWrite(ENA, carSpeed);
   analogWrite(ENB, carSpeed);
-  digitalWrite(IN1, HIGH);
-  digitalWrite(IN2, LOW);
-  digitalWrite(IN3, HIGH);
-  digitalWrite(IN4, LOW);
-  Serial.println("go right!");
+  digitalWrite(IN1, HIGH);  
+  digitalWrite(IN2, LOW);   
+  digitalWrite(IN3, HIGH);   
+  digitalWrite(IN4, LOW);    
+  //Serial.println("go right!");
 }
 
 //void moveCar(int directionChange){
@@ -132,31 +134,31 @@ void recvIR(){
   if (irrecv.decode(&results)){ 
     preMillis = millis();
     val = results.value;
-    Serial.println(val);
-    irrecv.resume();
+    //Serial.println(val);
     switch(val){
       case FORWARD: forward();  break;
       case BACK:    back();     break;
       case LEFT:    left();     break;
       case RIGHT:   right();    break;
-      case STOP:    stop();     break;
+      case STOP:    freeze();   break;
       default:                  break;
     }
+    irrecv.resume();
   }
   else{
     if(millis() - preMillis > 500){
-      stop();
+      freeze();
       preMillis = millis();
     }
   }
 }
 
 void ultraServoScan(){ //rotate servo and scan for nearby objects
-  delay(500);
+  //delay(500);
     middleDistance = getDistance();
 
     if(middleDistance <= 20) {
-      stop();
+      freeze();
       delay(500);
       myservo.write(10);
       delay(1000);
@@ -194,7 +196,6 @@ void ultraServoScan(){ //rotate servo and scan for nearby objects
 }
 
 void loop() {
-  // put your main code here, to run repeatedly:
-  ultraServoScan();
+  //ultraServoScan();
   recvIR();
 }
